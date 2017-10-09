@@ -1,5 +1,6 @@
 #include "Piezas.h"
 #include <vector>
+
 /** CLASS Piezas
  * Class for representing a Piezas vertical board, which is roughly based
  * on the game "Connect Four" where pieces are placed in a column and 
@@ -22,6 +23,8 @@
 **/
 Piezas::Piezas()
 {
+  turn = X;
+  board.resize(BOARD_ROWS, std::vector<Piece>(BOARD_COLS, Blank));
 }
 
 /**
@@ -30,6 +33,9 @@ Piezas::Piezas()
 **/
 void Piezas::reset()
 {
+  for(int i=0; i<BOARD_ROWS; i++)
+    for(int j=0; j<BOARD_COLS; j++)
+        board[i][j] = Blank;
 }
 
 /**
@@ -42,6 +48,20 @@ void Piezas::reset()
 **/ 
 Piece Piezas::dropPiece(int column)
 {
+    Piece currentTurn = turn;
+    if(turn == X) {
+		turn = O;
+    }else{turn = X;
+    }
+    if(column < 0 || column >= BOARD_COLS){
+        return Invalid;
+    }
+    for(int i=0; i<BOARD_ROWS; i++){
+        if(board[i][column] == Blank){
+            board[i][column] = currentTurn;
+            return currentTurn;
+        }
+    }
     return Blank;
 }
 
@@ -51,7 +71,10 @@ Piece Piezas::dropPiece(int column)
 **/
 Piece Piezas::pieceAt(int row, int column)
 {
-    return Blank;
+    if(column < 0 || column >= BOARD_COLS || row < 0 || row >= BOARD_ROWS){
+        return Invalid;
+    }
+    return board[row][column];
 }
 
 /**
@@ -65,5 +88,61 @@ Piece Piezas::pieceAt(int row, int column)
 **/
 Piece Piezas::gameState()
 {
-    return Blank;
+    int xTallyMax = 0;
+    int oTallyMax = 0;
+    Piece previousSpace;
+    int currTally = 0;
+    for(int i=0; i<BOARD_COLS; i++){
+        previousSpace = Blank;
+        for(int j=0; j<BOARD_ROWS; j++){
+            if(board[j][i] == Blank){
+                return Invalid;
+            }
+            if(board[j][i] == previousSpace){
+                currTally++;
+                if(board[j][i] == X){
+                    if(currTally > xTallyMax){
+                        xTallyMax = currTally;
+                    }
+                }
+                if(board[j][i] == O){
+                    if(currTally > oTallyMax){
+                        oTallyMax = currTally;
+                    }
+                }
+            }else{currTally=0;
+            }
+            previousSpace = board[j][i];
+        }
+    }   
+    for(int i=0; i<BOARD_ROWS; i++){
+        previousSpace = Blank;
+        for(int j=0; j<BOARD_COLS; j++){
+            if(board[i][j] == Blank){
+                return Invalid;
+            }
+            if(board[i][j] == previousSpace){
+                currTally++;
+                if(board[i][j] == X){
+                    if(currTally > xTallyMax){
+                        xTallyMax = currTally;
+                    }
+                }
+                if(board[i][j] == O){
+                    if(currTally > oTallyMax){
+                        oTallyMax = currTally;
+                    }
+                }
+            }else{currTally=0;
+            }
+            previousSpace = board[i][j];
+        }
+    }
+    if(xTallyMax == oTallyMax){
+        return Blank;
+    }
+    if(xTallyMax > oTallyMax){
+        return X;
+    }else{return O;
+    }
 }
